@@ -1,18 +1,37 @@
 import { test, expect } from '@playwright/test';
+const AREA = 'Παγκράτι';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test('ΧΕ-QA', async ({ page }) => {
+  await page.goto('https://www.xe.gr/property');
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
-});
+  // Cookies banner
+  await page.getByRole('button', { name: 'ΣΥΜΦΩΝΩ', exact: true }).click();
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+  await expect(page.getByTestId('property-transaction-name')).toHaveText('Ενοικίαση');
+  await expect(page.getByTestId('property-type-name')).toHaveText('Κατοικία');
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+  const inputField = page.getByTestId('area-input');
+
+  const dropdownPanel = page.getByTestId('geo_place_id_dropdown_panel');
+  const dropdownButtons = dropdownPanel.locator('button');
+
+  await inputField.click();
+  await inputField.fill(AREA);
+
+  await dropdownPanel.waitFor();
+
+  const buttonCount = await dropdownButtons.count();
+  console.log("count of buttons: " + buttonCount);
+
+  for (let i = 0; i < buttonCount; i++) {
+    const button = dropdownButtons.nth(i);
+    await expect(button).toBeEnabled();
+    await button.click();
+
+    // await page.waitForTimeout(500);
+
+    await inputField.click();
+    await inputField.fill(AREA);
+  }
 });
