@@ -1,13 +1,40 @@
 # XE QA Challenge
 
-This TestNG suite verifies basic functionality of the [xe.gr](https://www.xe.gr/property/) website using the [Selenium](https://www.selenium.dev/downloads/#:~:text=API%20Docs-,Java,-Stable%3A%204.27.0) framework.
+This suite verifies basic functionality of the [xe.gr](https://www.xe.gr/property/) website using the [playwright](https://playwright.dev/) framework.
 
 ## How to run it
 
-TODO
+### Requirements
+- Node.js 18+
 
-## Basic functionality
+## Setup Instructions
+1. Clone the repository:
+    ```bash
+    git clone git@github.com:konmaz/XE_QA_Challenge.git
+    cd XE_QA_Challenge
+    ```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+3. Install Playwright browsers:
+    ```bash
+    npx playwright install
+    ```
 
+## Running the Test
+
+In order to see the browser while the tests are running it:
+```bash
+npx playwright test --headed
+```
+
+You can also run it using the UI mode
+```bash
+npx playwright test --ui
+```
+
+For more info refer to [documentation](https://playwright.dev/docs/intro)
 
 
 ## Process:
@@ -42,3 +69,7 @@ TODO
     - ~~Optionally, check the phone number.~~
 
 
+## Future improvements - extensions 
+- Add threading
+- Break it to smaller tests
+- Add it to a CI/CD pipeline
