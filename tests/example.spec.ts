@@ -26,6 +26,7 @@ async function setPriceAndSquareFootageFilters(page: Page) {
     await page.getByTestId('maximum_size_input').click();
     await page.getByTestId('maximum_size_input').fill(String(squareFootageMax));
     await page.getByTestId('maximum_size_input').press('Enter');
+    await page.getByTestId('maximum_size_input').press('Escape');
 }
 
 async function extractedURLs(elements: Array<Locator>) {
@@ -39,12 +40,12 @@ async function extractedURLs(elements: Array<Locator>) {
     return urls;
 }
 
-async function assertNumber(page: Page, type: string, locator: string, numberMin: number, numberMax: number) {
+async function assertNumber(page: Page, type: string, locator: string, numberMin: number, numberMax: number): Promise<number> {
 
     const Element = page.locator(locator);
     await expect(Element).toBeVisible()
     const Text = await Element.textContent();
-    const Match = Text?.match(/\b\d+\b/g);
+    const Match = Text?.replace(/\./g, '').match(/\d+/); // remove dot and find number, if number is float ignore the decimal part
     const number = Match ? parseInt(Match[0]) : null;
 
     if (number !== null) {
@@ -65,13 +66,16 @@ async function assertNumber(page: Page, type: string, locator: string, numberMin
     }
 
 }
-
-async function validateAd(page: Page, url: string, maxPrice: number) {
+ 
+async function validateAd(page: Page, url: string, maxPrice: number | undefined): Promise<number> {
     await page.goto(url);
 
     await assertNumber(page, 'SquareFootage', '[data-testid="basic-info"] .title h1', squareFootageMin, squareFootageMax);
     const price = await assertNumber(page, 'Price', '[data-testid="basic-info"] .price h2', priceMin, priceMax);
-    await assertNumber(page, 'picturesCount', '[data-testid="image-count-icon"] span', 0, picturesCount);
+    const addHasImages = await page.locator('a[data-testid="gallery-photo"].deactive').count() == 0;
+    if (addHasImages) {
+        await assertNumber(page, 'picturesCount', '[data-testid="image-count-icon"] span', 0, picturesCount);
+    }
 
 
     if (maxPrice === undefined) {
@@ -124,7 +128,8 @@ test('main-test', async ({page}) => {
     await setPriceAndSquareFootageFilters(page);
 
 
-    let maxPrice: number = undefined;
+    let maxPrice: number | undefined = undefined;
+
 
     await page.getByTestId('open-property-sorting-dropdown').click()
     await page.getByTestId('price_desc').click();
@@ -153,7 +158,6 @@ test('main-test', async ({page}) => {
         for (const url of Array.from(urls)) {
             console.log('Visiting:', url);
             await page.goto(url);
-
             const modalTitle = await page.getByTestId('xe-modal-title').textContent();
             if (modalTitle.includes('Αγγελίες για αυτό το ακίνητο')) { // multiple ads by different brokerage offices
                 const subElements = await page.getByTestId('unique-ad-url').all();
