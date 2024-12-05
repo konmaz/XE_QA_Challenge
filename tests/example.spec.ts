@@ -2,64 +2,33 @@ import {expect, Locator, Page, test} from '@playwright/test';
 
 const AREA = 'Παγκράτι';
 
-const PriceMin = 200;
-const PriceMax = 700;
+const priceMin = 200;
+const priceMax = 700;
 
-const SquareFootageMin = 75;
-const SquareFootageMax = 150;
+const squareFootageMin = 75;
+const squareFootageMax = 150;
 
-const PicturesCount = 30;
+const picturesCount = 30;
 
-test('ΧΕ-QA', async ({page}) => {
-    await page.goto('https://www.xe.gr/property');
-
-    // Cookies banner
-    await page.getByRole('button', {name: 'ΣΥΜΦΩΝΩ', exact: true}).click();
-
-    await expect(page.getByTestId('property-transaction-name')).toHaveText('Ενοικίαση');
-    await expect(page.getByTestId('property-type-name')).toHaveText('Κατοικία');
-
-
-    const inputField = page.getByTestId('area-input');
-
-    const dropdownPanel = page.getByTestId('geo_place_id_dropdown_panel');
-    const dropdownButtons = dropdownPanel.locator('button');
-
-    await inputField.click();
-    await inputField.fill(AREA);
-    await dropdownPanel.waitFor();
-    const buttonCount = await dropdownButtons.count();
-
-    for (let i = 0; i < buttonCount; i++) {
-        const button = dropdownButtons.nth(i);
-        await expect(button).toBeEnabled();
-        await button.click();
-
-        await inputField.click();
-        await inputField.fill(AREA);
-    }
-
-    await page.getByTestId('submit-input').click();
+async function setPriceAndSquareFootageFilters(page: Page) {
     // Set a price range
     await page.getByTestId('price-filter-button').click();
     await page.getByTestId('minimum_price_input').click();
-    await page.getByTestId('minimum_price_input').fill(String(PriceMin));
+    await page.getByTestId('minimum_price_input').fill(String(priceMin));
     await page.getByTestId('maximum_price_input').click();
-    await page.getByTestId('maximum_price_input').fill(String(PriceMax));
+    await page.getByTestId('maximum_price_input').fill(String(priceMax));
     await page.getByTestId('maximum_price_input').press('Enter');
 
     // Set a square footage range
     await page.getByTestId('size-filter-button').click();
     await page.getByTestId('minimum_size_input').click();
-    await page.getByTestId('minimum_size_input').fill(String(SquareFootageMin));
+    await page.getByTestId('minimum_size_input').fill(String(squareFootageMin));
     await page.getByTestId('maximum_size_input').click();
-    await page.getByTestId('maximum_size_input').fill(String(SquareFootageMax));
+    await page.getByTestId('maximum_size_input').fill(String(squareFootageMax));
     await page.getByTestId('maximum_size_input').press('Enter');
+}
 
-Cl
-});
-
-async function extracted_Urls(elements: Array<Locator>) {
+async function extractedURLs(elements: Array<Locator>) {
     const urls = new Set<string>();
     for (const element of elements) {
         const href = await element.getAttribute('href');
@@ -97,88 +66,117 @@ async function assertNumber(page: Page, type: string, locator: string, numberMin
 
 }
 
-async function validate_ad(page: Page, url: string, max_price: number) {
+async function validateAd(page: Page, url: string, maxPrice: number) {
     await page.goto(url);
 
-    await assertNumber(page, 'SquareFootage', '[data-testid="basic-info"] .title h1', SquareFootageMin, SquareFootageMax);
-    const price = await assertNumber(page, 'Price', '[data-testid="basic-info"] .price h2', PriceMin, PriceMax);
-    await assertNumber(page, 'PicturesCount', '[data-testid="image-count-icon"] span', 0, PicturesCount);
+    await assertNumber(page, 'SquareFootage', '[data-testid="basic-info"] .title h1', squareFootageMin, squareFootageMax);
+    const price = await assertNumber(page, 'Price', '[data-testid="basic-info"] .price h2', priceMin, priceMax);
+    await assertNumber(page, 'picturesCount', '[data-testid="image-count-icon"] span', 0, picturesCount);
 
-    if (max_price === undefined) {
-        max_price = price;  // Initialize max_price with the first price
-    } else if (price > max_price) {
-        // If price is greater than max_price, the list is not sorted in descending order
-        throw new Error(`Ads are not sorted in descending order. The previous ad price (${max_price}) was greater than the current one (${price}).\nAd URL:\n${url}`);
+
+    if (maxPrice === undefined) {
+        maxPrice = price;  // Initialize maxPrice with the first price
+    } else if (price > maxPrice) {
+        // If price is greater than maxPrice, the list is not sorted in descending order
+        throw new Error(`Ads are not sorted in descending order. The previous ad price (${maxPrice}) was greater than the current one (${price}).\nAd URL:\n${url}`);
     } else {
-        max_price = price;
+        maxPrice = price;
     }
 
     await page.goBack();
-    return max_price;
+    return maxPrice;
 }
 
-test('2', async ({page}) => {
-    await page.goto('https://www.xe.gr/property/results?geo_place_ids%5B%5D=ChIJy1stSUK9oRQRi9ObJcOmO20&item_type=re_residence&maximum_price=700&maximum_size=150&minimum_price=200&minimum_size=75&transaction_name=rent');
+async function waitForResponse(page: Page) {
+    await page.waitForResponse(response => response.url().includes('https://www.xe.gr/property/results/map_search') && response.status() === 200
+    );
+}
+
+test('main-test', async ({page}) => {
+    await page.goto('https://www.xe.gr/property');
+
+    // Cookies banner
     await page.getByRole('button', {name: 'ΣΥΜΦΩΝΩ', exact: true}).click();
 
-    let max_price: number = undefined;
+    await expect(page.getByTestId('property-transaction-name')).toHaveText('Ενοικίαση');
+    await expect(page.getByTestId('property-type-name')).toHaveText('Κατοικία');
+
+    const inputField = page.getByTestId('area-input');
+
+    const dropdownPanel = page.getByTestId('geo_place_id_dropdown_panel');
+    const dropdownButtons = dropdownPanel.locator('button');
+
+    await inputField.click();
+    await inputField.fill(AREA);
+    await dropdownPanel.waitFor();
+    const buttonCount = await dropdownButtons.count();
+
+    for (let i = 0; i < buttonCount; i++) {
+        const button = dropdownButtons.nth(i);
+        await expect(button).toBeEnabled();
+        await button.click();
+
+        await inputField.click();
+        await inputField.fill(AREA);
+    }
+
+    await page.getByTestId('submit-input').click();
+    await setPriceAndSquareFootageFilters(page);
+
+
+    let maxPrice: number = undefined;
 
     await page.getByTestId('open-property-sorting-dropdown').click()
     await page.getByTestId('price_desc').click();
     await waitForResponse(page);
 
 
-    let has_next_page = false;
+    let nextPageExists = false;
 
     do {
         let lazyLoadWrappers = await page.locator('.lazyload-wrapper').all();
-        
+
         for (let i = 0; i < lazyLoadWrappers.length; i++) {
             lazyLoadWrappers = await page.locator('.lazyload-wrapper').all();
             await lazyLoadWrappers[i].scrollIntoViewIfNeeded();
             await page.waitForTimeout(50);
         }
-        
+
         const elements = await page.getByTestId('property-ad-url').all();
-        
+
         // Extract unique URLs
-        const urls = await extracted_Urls(elements);
-        
+        const urls = await extractedURLs(elements);
+
         console.log('Unique URLs found:', urls.size);
-        
+
         // Visit each unique URL
         for (const url of Array.from(urls)) {
             console.log('Visiting:', url);
             await page.goto(url);
-        
+
             const modalTitle = await page.getByTestId('xe-modal-title').textContent();
             if (modalTitle.includes('Αγγελίες για αυτό το ακίνητο')) { // multiple ads by different brokerage offices
-                const sub_elements = await page.getByTestId('unique-ad-url').all();
-                const sub_urls = await extracted_Urls(sub_elements);
-        
-                for (const sub_url of Array.from(sub_urls)) {
-                    max_price = await validate_ad(page, sub_url, max_price);
+                const subElements = await page.getByTestId('unique-ad-url').all();
+                const subUrls = await extractedURLs(subElements);
+
+                for (const subUrl of Array.from(subUrls)) {
+                    maxPrice = await validateAd(page, subUrl, maxPrice);
                 }
-        
+
             } else {
-                max_price = await validate_ad(page, url, max_price);
+                maxPrice = await validateAd(page, url, maxPrice);
             }
-        
+
             await page.goBack();
         }
         const nextPageButton = page.locator('.pager-next a');
-        has_next_page = await page.locator('.pager-next a').isVisible();
+        nextPageExists = await page.locator('.pager-next a').isVisible();
 
-        if (has_next_page) {
+        if (nextPageExists) {
             await nextPageButton.click();
             await waitForResponse(page);
         }
 
-    } while (has_next_page)
+    } while (nextPageExists)
 
-})
-
-async function waitForResponse(page: Page) {
-    await page.waitForResponse(response => response.url().includes('https://www.xe.gr/property/results/map_search') && response.status() === 200
-    );
-}
+});
