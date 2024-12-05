@@ -1,5 +1,7 @@
 # XE QA Challenge
 
+[Example.webm](https://github.com/user-attachments/assets/39a1ba39-ddec-43d4-b418-03c348794b6a)
+
 This suite verifies basic functionality of the [xe.gr](https://www.xe.gr/property/) website using the [playwright](https://playwright.dev/) framework.
 
 ## How to run it
