@@ -25,7 +25,12 @@ This suite verifies basic functionality of the [xe.gr](https://www.xe.gr/propert
     ```
 
 ## Running the Test
+_Before running check the values price, squareFootage adn picturesCount on of the file `tests/example.spec.ts`_
 
+Headless mode without seeing the browser
+```bash
+npx playwright test
+```
 In order to see the browser while the tests are running it:
 ```bash
 npx playwright test --headed
@@ -37,7 +42,7 @@ npx playwright test --ui
 ```
 
 To view trace
-```base
+```bash
 npx playwright show-trace
 ```
 For more info refer to [documentation](https://playwright.dev/docs/intro)
@@ -69,10 +74,11 @@ For more info refer to [documentation](https://playwright.dev/docs/intro)
 
 ## `regular_check_listing()`:
 - Check:
-    - Price
+    - Price withing range 
     - Square footage
-    - The number of photos (< 30)
-    - ~~Optionally, check the phone number.~~
+    - if photos exists
+      - The number of photos (< 30) 
+    - ~~Optionally, check the phone number.~~ to prevent the anti-bot behavior this has not been implemented
 
 
 ## Future improvements - extensions 

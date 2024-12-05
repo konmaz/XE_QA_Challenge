@@ -1,7 +1,7 @@
 import {expect, Locator, Page, test} from '@playwright/test';
 
 const AREA = 'Παγκράτι';
-
+// Improvement: Make the price, squareFootage adn picturesCount to be passed as command line arguments
 const priceMin = 200;
 const priceMax = 700;
 
