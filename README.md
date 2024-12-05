@@ -1,6 +1,6 @@
 # XE QA Challenge
 
-[Example.webm](https://github.com/user-attachments/assets/39a1ba39-ddec-43d4-b418-03c348794b6a)
+[Test.webm](https://github.com/user-attachments/assets/27068c36-e1f5-44e5-9490-6d0f9a3d1486)
 
 This suite verifies basic functionality of the [xe.gr](https://www.xe.gr/property/) website using the [playwright](https://playwright.dev/) framework.
 
@@ -36,6 +36,10 @@ You can also run it using the UI mode
 npx playwright test --ui
 ```
 
+To view trace
+```base
+npx playwright show-trace
+```
 For more info refer to [documentation](https://playwright.dev/docs/intro)
 
 
